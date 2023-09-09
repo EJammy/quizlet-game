@@ -10,11 +10,17 @@ import {
 } from 'dataset/types';
 import Image from 'next/image';
 
+import {DndContext} from '@dnd-kit/core';
+
+import {Draggable} from './Draggable';
+import {Droppable} from './Droppable';
+
+
 const IMAGE_HEIGHT = 100;
 const IMAGE_WIDTH = 120;
 export default function Game() {
   // If you don't want SSR
-  if (typeof window !== 'undefined') return null;
+  // if (typeof window !== 'undefined') return null;
 
   // to get a specific Set
   const { disneyPrincessTrivia: quizletSet } = Fun.getAllSetsMap();
@@ -59,10 +65,14 @@ export default function Game() {
   );
 
   return (
-    <div>
-      <h1>Your game title here!</h1>
-      <h2>Set used: {quizletSet.set.title}</h2>
-      {renderTerms(quizletSet.studiableItem)}
-    </div>
+    <DndContext>
+      <Draggable>
+      foo
+      </Draggable>
+      <Droppable>
+      bar
+      </Droppable>
+      <Droppable />
+    </DndContext>
   );
 }
