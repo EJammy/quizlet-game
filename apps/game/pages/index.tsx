@@ -1,78 +1,53 @@
 import Quizlet from 'dataset';
 import Fun from 'dataset/sets/Fun';
-import {
-  CardSide,
-  MediaType,
-  SerializedMedia,
-  SerializedMediaImage,
-  SerializedMediaText,
-  StudiableItem,
-} from 'dataset/types';
-import Image from 'next/image';
+import Science from 'dataset/sets/Science';
+import Language from 'dataset/sets/Language';
 
-import {DndContext} from '@dnd-kit/core';
+import { closestCenter, DndContext, rectIntersection } from '@dnd-kit/core';
 
-import {Draggable} from './Draggable';
-import {Droppable} from './Droppable';
+import { DragCard, DragCardProps } from './Draggable';
+import { Droppable } from './Droppable';
+import { useEffect, useState } from 'react';
 
 
-const IMAGE_HEIGHT = 100;
-const IMAGE_WIDTH = 120;
 export default function Game() {
-  // If you don't want SSR
-  // if (typeof window !== 'undefined') return null;
-
   // to get a specific Set
-  const { disneyPrincessTrivia: quizletSet } = Fun.getAllSetsMap();
-  // const quizletSet = Quizlet.getRandomSet();
 
-  const renderMedia = (media: SerializedMedia) => {
-    switch (media.type) {
-      case MediaType.TEXT:
-        const { plainText } = media as SerializedMediaText;
-        return <div key={media.type}>{plainText}</div>;
-      case MediaType.IMAGE:
-        const { url } = media as SerializedMediaImage;
-        return (
-          <Image
-            alt="term image"
-            height={IMAGE_HEIGHT}
-            key={media.type}
-            src={url}
-            width={IMAGE_WIDTH}
-          />
-        );
-    }
-  };
-  const renderTerm = (studiableItem: StudiableItem) => (
-    <div key={studiableItem.id}>
-      {studiableItem.cardSides.map(cardSide => {
-        const { label, media } = cardSide;
-        return (
-          <div key={cardSide.sideId}>
-            {label}: {media.map(termMedia => renderMedia(termMedia))}
-          </div>
-        );
-      })}
-    </div>
-  );
+  // const quizletSet = Fun.getAllSetsMap().jokes;
+  const quizletSet = Language.getAllSetsMap().chineseFood;
 
-  const renderTerms = (studiableItems: StudiableItem[]) => (
-    <>
-      <h3>({studiableItems.length} Terms)</h3>
-      {studiableItems.map(studiableItem => renderTerm(studiableItem))}
-    </>
-  );
+  // const [quizletSet, setQuizletSet] = useState(undefined);
+  // useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
+
+  if (!quizletSet) return null;
+
+  const initCards = () => quizletSet.studiableItem.map(
+    (item) => { return { card: item.cardSides[0], id: item.id } }
+  )
+
+  const initDrop = () => quizletSet.studiableItem.map(
+    (item) => { return { card: item.cardSides[1], id: item.id } }
+  )
+
+  const [dragCards, setDragCards] = useState(initCards());
+  const [dropTarget, setDropTarget] = useState(initDrop());
+  const [selected, setSelected] = useState(null);
 
   return (
-    <DndContext>
-      <Draggable>
-      foo
-      </Draggable>
-      <Droppable>
-      bar
-      </Droppable>
-      <Droppable />
-    </DndContext>
+    <div>
+      <h1>Your game title here!</h1>
+      <h2>Set used: {quizletSet.set.title}</h2>
+      <DndContext
+        onDragStart={(event) => {
+          setSelected(event.active.id)
+        }}
+        onDragEnd={(event) => {
+          console.log(selected, "::: ", event.over?.id)
+        }}
+        collisionDetection={rectIntersection}>
+        {dragCards.map((card) => <DragCard {...card} key={card.id} />)}
+        {dropTarget.map((target) => <Droppable {...target} key={"drop".concat(target.id)} />)}
+      </DndContext>
+    </div>
   );
 }

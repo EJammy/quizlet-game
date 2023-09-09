@@ -14,7 +14,12 @@ module.exports = {
         protocol: 'https',
         hostname: '**.quizlet.com',
         port: '',
-        pathname: '/**',
+        pathname: '/.**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.quizlet.com',
+        port: '',
       },
     ],
   },
