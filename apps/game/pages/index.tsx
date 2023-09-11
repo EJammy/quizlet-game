@@ -3,11 +3,19 @@ import Fun from 'dataset/sets/Fun';
 import Science from 'dataset/sets/Science';
 import Language from 'dataset/sets/Language';
 
-import { closestCenter, DndContext, rectIntersection } from '@dnd-kit/core';
+import { closestCenter, DndContext, DragEndEvent, rectIntersection } from '@dnd-kit/core';
 
 import { DragCard, DragCardProps } from './Draggable';
 import { Droppable } from './Droppable';
 import { useEffect, useState } from 'react';
+import { StudiableItem } from 'dataset/types';
+
+interface DragCard extends StudiableItem {
+  pos: {
+    x: number,
+    y: number
+  }
+}
 
 
 export default function Game() {
@@ -26,8 +34,8 @@ export default function Game() {
   const targetCount = 3;
 
   // Get random count elements in set a that's not in set b
-  function getRandom(a, b, count:number) {
-    const items = a.filter(x => !b.includes(x));
+  function getRandom(a: StudiableItem[], b: StudiableItem[], count: number = 1) {
+    const items = a.filter(x => !b.some(y => y.id == x.id));
     let ret = [];
     while (items.length > 0 && count > 0) {
       const rng = Math.floor(Math.random() * items.length);
@@ -39,20 +47,60 @@ export default function Game() {
     return ret;
   }
 
-  const [dragCards, setDragCards] = useState([]);
+  const [dragCards, setDragCards] = useState<DragCard[]>([]);
   const [dropTarget, setDropTarget] = useState([]);
 
   // items that are in dragCards but not in dropTarget
   const [selected, setSelected] = useState(null);
 
+  function createCard(item: StudiableItem) {
+    return { ...item, pos: { x: 0, y: 0 }};
+  }
+
   function update() {
-    const initialCards = getRandom(allItems, [], cardCount); 
-    setDragCards(initialCards);
+    const initialCards = getRandom(allItems, [], cardCount);
+    setDragCards(initialCards.map(item => {
+      // return { ...item, pos: { x: Math.floor(Math.random() * 300), y: Math.floor(Math.random() * 300) }}
+      return createCard(item);
+    }));
     setDropTarget(getRandom(initialCards, [], targetCount));
   }
-  // console.log(dragCards);
-  // console.log(dropTarget);
+  // I think randomness requires use effect, otherwise there will be hydration error.
   useEffect(update, []);
+
+  function handleDragEnd(event: DragEndEvent) {
+    console.log(selected, "::: ", event.over?.id)
+    const { x: dx, y: dy } = event.delta;
+    if (event.over) {
+      if (event.over.id == selected.id) {
+        // handle correct
+      } else {
+        // handle wrong
+      }
+      // Dangerous
+      const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
+      const newTarget = getRandom(dragCards, dropTarget, 1)[0];
+      setDragCards(
+        dragCards.map(item => item.id == event.active.id ? newCard : item)
+      );
+      setDropTarget(
+        dropTarget.map(item => item.id == event.over.id ? newTarget : item)
+      );
+    } else {
+      setDragCards(
+        dragCards.map(item => item.id == event.active.id ?
+          {
+            ...item,
+            pos: {
+              x: item.pos.x + dx,
+              y: item.pos.y + dy
+            }
+          }
+          : item
+        )
+      );
+    }
+  }
 
   return (
     <div>
@@ -61,16 +109,15 @@ export default function Game() {
       <button onClick={update}>Update!</button>
       <DndContext
         onDragStart={(event) => {
-          setSelected(event.active.id)
+          const item = dragCards.find(x => x.id == event.active.id)
+          setSelected(item)
         }}
-        onDragEnd={(event) => {
-          console.log(selected, "::: ", event.over?.id)
-        }}
+        onDragEnd={handleDragEnd}
         collisionDetection={rectIntersection}>
         <div className='dropzone-container'>
-        {dropTarget.map((item) => <Droppable card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
+          {dropTarget.map((item) => <Droppable card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
         </div>
-        {dragCards.map((item) => <DragCard card={item.cardSides[0]} id={item.id} key={item.id} />)}
+        {dragCards.map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />)}
       </DndContext>
     </div>
   );

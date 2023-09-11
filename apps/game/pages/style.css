@@ -23,14 +23,21 @@
 }
 
 .drag-card {
+    position: relative;
+    width: min-content;
+}
+.drag-card-inner {
+    width: 300px;
+    min-height: 100px;
+    cursor: grab;
     animation-name: scaleIn;
     animation-timing-function: ease-out;
     animation-duration: 0.4s;
+    transition: scale ease-out 0.2s;
 }
 
 .selected {
-    transition: transform ease-out;
-    transform: scale(120);
+    scale: 1.2;
 }
 
 .dropzone-container {
