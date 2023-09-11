@@ -27,13 +27,14 @@ export function DragCard({ card, id }: DragCardProps) {
   }
 
   const style: CSSProperties = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 20px)` : undefined,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 200px)` : undefined,
+    zIndex: transform ? 1: 0,
     position: 'relative',
   };
 
   const { sideId, label, media } = card;
   return (
-    <button ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <button className='drag-card' ref={setNodeRef} style={style} {...listeners} {...attributes}>
       {id}: {label}: {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
     </button>
   );

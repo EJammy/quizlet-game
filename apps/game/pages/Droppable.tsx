@@ -1,7 +1,6 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { CardSide } from 'dataset/types';
-import styles from './style.module.css'
 import { Media } from './Media';
 
 export interface DropTarget {
@@ -20,7 +19,7 @@ export function Droppable({ card, id }: DropTarget) {
 
   const { sideId, label, media } = card;
   return (
-    <div ref={setNodeRef} className={styles.dropzone} style={style} key={id}>
+    <div ref={setNodeRef} className='dropzone' style={style} key={id}>
        : {id}: {label}: {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
     </div>
   );
