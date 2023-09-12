@@ -1,3 +1,19 @@
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    box-sizing: border-box;
+    padding: 8px;
+}
+
+#__next {
+    height: 100%;
+}
+
+* {
+    margin: 0;
+}
 
 @keyframes scaleIn {
     0% {
@@ -8,6 +24,12 @@
     }
 }
 
+.dnd-area {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 24px;
+}
 .dropzone {
     background: #F2F2F2;
     width: 300px;
@@ -37,7 +59,7 @@
 }
 
 .selected {
-    scale: 1.2;
+    scale: 1.15;
 }
 
 .dropzone-container {

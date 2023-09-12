@@ -9,6 +9,7 @@ import { DragCard, DragCardProps } from './Draggable';
 import { Droppable } from './Droppable';
 import { useEffect, useState } from 'react';
 import { StudiableItem } from 'dataset/types';
+import { restrictToParentElement, snapCenterToCursor } from '@dnd-kit/modifiers';
 
 interface DragCard extends StudiableItem {
   pos: {
@@ -33,6 +34,7 @@ export default function Game() {
   const cardCount = 5;
   const targetCount = 3;
 
+
   // Get random count elements in set a that's not in set b
   function getRandom(a: StudiableItem[], b: StudiableItem[], count: number = 1) {
     const items = a.filter(x => !b.some(y => y.id == x.id));
@@ -49,6 +51,7 @@ export default function Game() {
 
   const [dragCards, setDragCards] = useState<DragCard[]>([]);
   const [dropTarget, setDropTarget] = useState([]);
+  const [score, setScore] = useState(0);
 
   // items that are in dragCards but not in dropTarget
   const [selected, setSelected] = useState(null);
@@ -73,9 +76,9 @@ export default function Game() {
     const { x: dx, y: dy } = event.delta;
     if (event.over) {
       if (event.over.id == selected.id) {
-        // handle correct
+        setScore(score + 1);
       } else {
-        // handle wrong
+        setScore(score - 1);
       }
       // Dangerous
       const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
@@ -103,9 +106,10 @@ export default function Game() {
   }
 
   return (
-    <div>
+    <>
       <h1>Your game title here!</h1>
       <h2>Set used: {quizletSet.set.title}</h2>
+      <h3>Score: {score}</h3>
       <button onClick={update}>Update!</button>
       <DndContext
         onDragStart={(event) => {
@@ -113,12 +117,15 @@ export default function Game() {
           setSelected(item)
         }}
         onDragEnd={handleDragEnd}
+        modifiers={[restrictToParentElement]}
         collisionDetection={rectIntersection}>
+        <div className='dnd-area'>
         <div className='dropzone-container'>
           {dropTarget.map((item) => <Droppable card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
         </div>
         {dragCards.map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />)}
+        </div>
       </DndContext>
-    </div>
+    </>
   );
 }
