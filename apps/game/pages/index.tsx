@@ -5,8 +5,8 @@ import Language from 'dataset/sets/Language';
 
 import { closestCenter, DndContext, DragEndEvent, rectIntersection } from '@dnd-kit/core';
 
-import { DragCard, DragCardProps } from './Draggable';
-import { Droppable } from './Droppable';
+import { DragCard } from '../Draggable';
+import { Droppable } from '../Droppable';
 import { useEffect, useState } from 'react';
 import { StudiableItem } from 'dataset/types';
 import { restrictToParentElement, snapCenterToCursor } from '@dnd-kit/modifiers';
@@ -29,11 +29,15 @@ export default function Game() {
   // const [quizletSet, setQuizletSet] = useState(undefined);
   // useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
 
-  if (!quizletSet) return null;
-
   const cardCount = 5;
   const targetCount = 3;
 
+  const [dragCards, setDragCards] = useState<DragCard[]>([]);
+  const [dropTarget, setDropTarget] = useState([]);
+  const [score, setScore] = useState(0);
+
+  // items that are in dragCards but not in dropTarget
+  const [selected, setSelected] = useState(null);
 
   // Get random count elements in set a that's not in set b
   function getRandom(a: StudiableItem[], b: StudiableItem[], count: number = 1) {
@@ -48,13 +52,6 @@ export default function Game() {
     }
     return ret;
   }
-
-  const [dragCards, setDragCards] = useState<DragCard[]>([]);
-  const [dropTarget, setDropTarget] = useState([]);
-  const [score, setScore] = useState(0);
-
-  // items that are in dragCards but not in dropTarget
-  const [selected, setSelected] = useState(null);
 
   function createCard(item: StudiableItem) {
     return { ...item, pos: { x: 0, y: 0 }};
