@@ -4,7 +4,8 @@ html {
 body {
     height: 100%;
     box-sizing: border-box;
-    padding: 8px;
+    padding: 24px;
+    background: #273234;
 }
 
 #__next {
@@ -24,18 +25,101 @@ body {
     }
 }
 
-.dnd-area {
+.game-area {
+    display: flex;
+    flex-direction: column;
+
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    padding: 24px;
 }
-.dropzone {
+
+.top-area {
+    display: flex;
+    background: #4F6462;
+}
+
+.HUD {
+    width: 350px;
+    min-height: 300px;
+    flex: 0 0 auto;
+    padding: 32px;
+    background: #749380;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.HUD>* {
+    flex: 1 1 auto;
+}
+
+.HUD-text {
+    display: flex;
+
+    background: #E5FFF0;
+    height: 56px;
+    flex: 0 1 auto;
+}
+
+.HUD-text-main {
+    width: 80%;
+
+    color: #355233;
+    font-family: Roboto;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.HUD-text-label {
+    width: 20%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    color: #404F37;
+    text-align: right;
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.combo-counter-area {
+    width: 100%;
+}
+
+.combo-counter {
+    width: 33%;
+}
+
+.dropzone-container {
+    padding: 24px;
+    display: flex;
+
+    flex: 1 0 min-content;
+    flex-wrap: wrap;
+}
+
+.drag-card-area {
+    background: #EFD292;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
+    padding: 24px;
+
+    flex: 1 0 auto;
+}
+
+.drop-card {
     background: #F2F2F2;
-    width: 300px;
-    height: 200px;
     margin: 10px;
     padding: 10px;
+
+    width: 120px;
+    flex: 1 1 auto;
 
     border-radius: 10px;
     box-shadow: 4px 4px 1px 0px #657F75;
@@ -56,12 +140,15 @@ body {
     animation-timing-function: ease-out;
     animation-duration: 0.4s;
     transition: scale ease-out 0.2s;
+
+    border-radius: 10px;
+    border: none;
+    background: #F2F2F2;
+    box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.24);
+
 }
 
 .selected {
     scale: 1.15;
 }
 
-.dropzone-container {
-    display: flex;
-}

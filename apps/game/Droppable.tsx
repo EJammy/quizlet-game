@@ -19,8 +19,8 @@ export function Droppable({ card, id }: DropTarget) {
 
   const { label, media } = card;
   return (
-    <div ref={setNodeRef} className={'dropzone ' + (isOver ? 'selected' : '')} style={style} key={id}>
-       : {id}: {label}: {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
+    <div ref={setNodeRef} className={'drop-card ' + (isOver ? 'selected' : '')} style={style} key={id}>
+       {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
     </div>
   );
 }
