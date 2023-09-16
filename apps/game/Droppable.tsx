@@ -8,8 +8,7 @@ export interface DropTarget {
   id: number;
 }
 
-
-export function Droppable({ card, id }: DropTarget) {
+export function DropCard({ card, id }: DropTarget) {
   const { isOver, setNodeRef } = useDroppable({
     id: id,
   });

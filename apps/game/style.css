@@ -97,7 +97,7 @@ body {
     width: 33%;
 }
 
-.dropzone-container {
+.drop-card-area {
     padding: 24px;
     display: flex;
 
@@ -129,7 +129,7 @@ body {
 }
 
 .drag-card {
-    position: relative;
+    position: absolute;
     width: min-content;
 }
 .drag-card-inner {

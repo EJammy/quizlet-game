@@ -6,7 +6,7 @@ import Language from 'dataset/sets/Language';
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, rectIntersection } from '@dnd-kit/core';
 
 import { DragCard } from '../Draggable';
-import { Droppable } from '../Droppable';
+import { DropCard } from '../Droppable';
 import { useEffect, useRef, useState } from 'react';
 import { StudiableItem } from 'dataset/types';
 import { restrictToParentElement, snapCenterToCursor } from '@dnd-kit/modifiers';
@@ -66,10 +66,19 @@ export default function Game() {
   }
 
   const spawnAreaRef = useRef(null);
+  function randomRange(min, n) {
+    return Math.floor(Math.random() * n) + min;
+  }
 
   function createCard(item: StudiableItem) {
-    console.log(getComputedStyle(spawnAreaRef.current));
-    return { ...item, pos: { x: 0, y: 0 }};
+    const rect = spawnAreaRef.current.getBoundingClientRect();
+    console.log(rect);
+    // TODO: Change me
+    const cardWidth = 300;
+    const cardHeight = 300;
+
+    const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
+    return { ...item, pos: pos};
   }
 
   function update() {
@@ -84,7 +93,8 @@ export default function Game() {
   useEffect(update, []);
 
   function handleDragEnd(event: DragEndEvent) {
-    console.log(selected, "::: ", event.over?.id)
+    const rect = spawnAreaRef.current.getBoundingClientRect();
+    console.log(rect);
     const { x: dx, y: dy } = event.delta;
     if (event.over) {
       if (event.over.id == selected.id) {
@@ -133,13 +143,18 @@ export default function Game() {
             <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
           </div>
           {/* <button onClick={update}>Update!</button> */}
-          <div className='dropzone-container'>
-            {dropTarget.map((item) => <Droppable card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
+          <div className='drop-card-area'>
+            {dropTarget.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
           </div>
         </div>
         <div className='drag-card-area' ref={spawnAreaRef}>
         </div>
-        {dragCards.map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />)}
+          {dragCards.map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />)}
+        {/*<DragOverlay>
+          {selected ? 
+            dragCards.filter(item => item.id == selected.id).map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />) 
+          : null}
+        </DragOverlay>*/}
       </DndContext>
     </div>
   );
