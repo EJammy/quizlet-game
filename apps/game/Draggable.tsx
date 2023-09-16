@@ -12,13 +12,13 @@ import {
 import Image from 'next/image';
 import { Media } from './Media';
 
-// export interface DragCardProps {
-//   card: CardSide,
-//   id: number
-//   pos: { 
-// }
+export interface DragCardProps {
+  card: CardSide,
+  id: number
+  pos: { x: number, y: number }
+}
 
-export function DragCard({ card, id, pos }) {
+export function DragCard({ card, id, pos }: DragCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging, active } = useDraggable({
     id: id,
   });

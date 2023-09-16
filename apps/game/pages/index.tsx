@@ -5,7 +5,7 @@ import Language from 'dataset/sets/Language';
 
 import { closestCenter, DndContext, DragEndEvent, DragOverlay, rectIntersection } from '@dnd-kit/core';
 
-import { DragCard } from '../Draggable';
+import { DragCard, DragCardProps } from '../Draggable';
 import { DropCard } from '../Droppable';
 import { useEffect, useRef, useState } from 'react';
 import { StudiableItem } from 'dataset/types';
@@ -32,7 +32,6 @@ function HUDText({text, label}) {
 }
 
 export default function Game() {
-  // to get a specific Set
 
   // const quizletSet = Fun.getAllSetsMap().jokes;
   const quizletSet = Language.getAllSetsMap().chineseFood;
@@ -44,16 +43,32 @@ export default function Game() {
   const cardCount = 5;
   const targetCount = 3;
 
-  const [dragCards, setDragCards] = useState<DragCard[]>([]);
-  const [dropTarget, setDropTarget] = useState([]);
+  const [dragCards, setDragCards] = useState<DragCardProps[]>([]);
+  const [dropCards, setDropCards] = useState([]);
   const [score, setScore] = useState(0);
 
-  // items that are in dragCards but not in dropTarget
   const [selected, setSelected] = useState(null);
 
-  // Get random count elements in set a that's not in set b
-  function getRandom(a: StudiableItem[], b: StudiableItem[], count: number = 1) {
-    const items = a.filter(x => !b.some(y => y.id == x.id));
+
+  const spawnAreaRef = useRef(null);
+  function randomRange(min, n) {
+    return Math.floor(Math.random() * n) + min;
+  }
+
+  function createCard(item: StudiableItem): DragCardProps {
+    const rect = spawnAreaRef.current.getBoundingClientRect();
+    console.log(rect);
+    // TODO: Change me
+    const cardWidth = 300;
+    const cardHeight = 300;
+
+    const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
+    return { card: item.cardSides[0], id: item.id, pos: pos};
+  }
+
+  // Get random elements in set a that's not in set b
+  function getRandom(a: { id: number }[], b: { id: number }[], count: number = 1) {
+    const items = allItems.filter(x => a.some(y => y.id == x.id) && !b.some(y => y.id == x.id));
     let ret = [];
     while (items.length > 0 && count > 0) {
       const rng = Math.floor(Math.random() * items.length);
@@ -65,30 +80,14 @@ export default function Game() {
     return ret;
   }
 
-  const spawnAreaRef = useRef(null);
-  function randomRange(min, n) {
-    return Math.floor(Math.random() * n) + min;
-  }
-
-  function createCard(item: StudiableItem) {
-    const rect = spawnAreaRef.current.getBoundingClientRect();
-    console.log(rect);
-    // TODO: Change me
-    const cardWidth = 300;
-    const cardHeight = 300;
-
-    const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
-    return { ...item, pos: pos};
-  }
-
   function update() {
     const initialCards = getRandom(allItems, [], cardCount);
     setDragCards(initialCards.map(item => {
-      // return { ...item, pos: { x: Math.floor(Math.random() * 300), y: Math.floor(Math.random() * 300) }}
       return createCard(item);
     }));
-    setDropTarget(getRandom(initialCards, [], targetCount));
+    setDropCards(getRandom(initialCards, [], targetCount));
   }
+
   // I think randomness requires use effect, otherwise there will be hydration error.
   useEffect(update, []);
 
@@ -104,12 +103,12 @@ export default function Game() {
       }
       // Dangerous
       const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
-      const newTarget = getRandom(dragCards, dropTarget, 1)[0];
+      const newTarget = getRandom(dragCards, dropCards, 1)[0];
       setDragCards(
         dragCards.map(item => item.id == event.active.id ? newCard : item)
       );
-      setDropTarget(
-        dropTarget.map(item => item.id == event.over.id ? newTarget : item)
+      setDropCards(
+        dropCards.map(item => item.id == event.over.id ? newTarget : item)
       );
     } else {
       setDragCards(
@@ -144,17 +143,12 @@ export default function Game() {
           </div>
           {/* <button onClick={update}>Update!</button> */}
           <div className='drop-card-area'>
-            {dropTarget.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
+            {dropCards.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
           </div>
         </div>
         <div className='drag-card-area' ref={spawnAreaRef}>
         </div>
-          {dragCards.map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />)}
-        {/*<DragOverlay>
-          {selected ? 
-            dragCards.filter(item => item.id == selected.id).map((item) => <DragCard card={item.cardSides[0]} pos={item.pos} id={item.id} key={item.id} />) 
-          : null}
-        </DragOverlay>*/}
+          {dragCards.map(item => <DragCard {...item} key={item.id} />)}
       </DndContext>
     </div>
   );
