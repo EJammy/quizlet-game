@@ -20,7 +20,7 @@ interface DragCard extends StudiableItem {
 
 function HUDText({text, label}) {
   return (
-  <div className='HUD-text'>
+  <div className='HUD-textbox'>
     <div className='HUD-text-main'>
       {text}
     </div>
@@ -34,11 +34,12 @@ function HUDText({text, label}) {
 export default function Game() {
 
   // const quizletSet = Fun.getAllSetsMap().jokes;
-  const quizletSet = Language.getAllSetsMap().chineseFood;
-  const allItems = quizletSet.studiableItem.slice(0, 8);
+  // const quizletSet = Language.getAllSetsMap().chineseFood;
 
-  // const [quizletSet, setQuizletSet] = useState(undefined);
-  // useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
+  const [quizletSet, setQuizletSet] = useState(undefined);
+  useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
+
+  const allItems = quizletSet? quizletSet.studiableItem.slice(0, 8): null;
 
   const cardCount = 5;
   const targetCount = 3;
@@ -48,10 +49,11 @@ export default function Game() {
   const [score, setScore] = useState(0);
 
   const [selected, setSelected] = useState(null);
+  const [cardsZIndex, setCardsZIndex] = useState(0);
 
 
   const spawnAreaRef = useRef(null);
-  function randomRange(min, n) {
+  function randomRange(min: number, n: number) {
     return Math.floor(Math.random() * n) + min;
   }
 
@@ -63,7 +65,7 @@ export default function Game() {
     const cardHeight = 300;
 
     const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
-    return { card: item.cardSides[0], id: item.id, pos: pos};
+    return { card: item.cardSides[0], id: item.id, pos: pos, zIndex: cardsZIndex};
   }
 
   // Get random elements in set a that's not in set b
@@ -80,16 +82,38 @@ export default function Game() {
     return ret;
   }
 
-  function update() {
+  // I think randomness requires use effect, otherwise there will be hydration error.
+  // useEffect(update, []);
+
+  // Timer stuff
+  const [startTime, setStartTime] = useState(null);
+  const [now, setNow] = useState(null);
+  const intervalRef = useRef(null);
+
+  function startGame() {
     const initialCards = getRandom(allItems, [], cardCount);
     setDragCards(initialCards.map(item => {
       return createCard(item);
     }));
     setDropCards(getRandom(initialCards, [], targetCount));
+
+    setStartTime(Date.now());
+    setNow(Date.now());
+
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setNow(Date.now());
+    }, 100);
   }
 
-  // I think randomness requires use effect, otherwise there will be hydration error.
-  useEffect(update, []);
+  function handleStop() {
+    clearInterval(intervalRef.current);
+  }
+
+  let timeRemaining = 0;
+  if (startTime != null && now != null) {
+    timeRemaining = 3000 - Math.round((now - startTime) / 1000);
+  }
 
   function handleDragEnd(event: DragEndEvent) {
     const rect = spawnAreaRef.current.getBoundingClientRect();
@@ -119,14 +143,24 @@ export default function Game() {
               x: item.pos.x + dx,
               y: item.pos.y + dy
             },
+            zIndex: cardsZIndex + 1
           }
           : item
         )
       );
+      setCardsZIndex(cardsZIndex + 1);
     }
   }
 
+  const startOverlay = timeRemaining < 0.01 ? (
+    <div className='start-overlay' >
+      <button onClick={startGame} className='start-button'>Start</button>
+    </div>
+    ) : null
+
   return (
+  <>
+    {startOverlay}
     <div className='game-area'>
       <DndContext
         onDragStart={(event) => {
@@ -139,7 +173,8 @@ export default function Game() {
         <div className='top-area' >
           <div className='HUD'>
             <HUDText text={score} label="score" />
-            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0z" fill="none"/><path d="M22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM12.5 8H11v6l4.75 2.85.75-1.23-4-2.37V8zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg>
+            <HUDText text={score} label="Foo" />
+            <HUDText text={timeRemaining} label="Timer" />
           </div>
           {/* <button onClick={update}>Update!</button> */}
           <div className='drop-card-area'>
@@ -151,5 +186,6 @@ export default function Game() {
           {dragCards.map(item => <DragCard {...item} key={item.id} />)}
       </DndContext>
     </div>
+    </>
   );
 }

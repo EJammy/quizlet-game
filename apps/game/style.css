@@ -4,9 +4,10 @@ html {
 body {
     height: 100%;
     box-sizing: border-box;
-    padding: 24px;
-    background: #273234;
 }
+
+    /* padding: 24px; */
+    /* background: #273234; */
 
 #__next {
     height: 100%;
@@ -23,6 +24,44 @@ body {
     100% {
         transform: scale(1);
     }
+}
+
+.start-overlay {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+
+    background: rgba(0, 0, 0, 0.50);
+    backdrop-filter: blur(5px);
+}
+
+.start-button {
+    position: relative;
+    top: 50%;
+    left: calc(50% - 150px);
+    width: 300px;
+    height: 75px;
+
+    border-radius: 12px;
+    border: 4px solid #3C321E;
+    background: #F7D07C;
+    box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.50);
+
+    color: #3C321E;
+    font-family: Poppins;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.start-button:hover {
+    background: #E7C06C;
+}
+
+.start-button:active {
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
 }
 
 .game-area {
@@ -45,6 +84,7 @@ body {
     flex: 0 0 auto;
     padding: 32px;
     background: #749380;
+    justify-content: space-between;
 
     display: flex;
     flex-direction: column;
@@ -54,16 +94,21 @@ body {
     flex: 1 1 auto;
 }
 
-.HUD-text {
+.HUD-textbox {
     display: flex;
 
     background: #E5FFF0;
-    height: 56px;
+    height: 42px;
     flex: 0 1 auto;
+    padding: 12px;
 }
 
 .HUD-text-main {
     width: 80%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     color: #355233;
     font-family: Roboto;
@@ -105,19 +150,15 @@ body {
     flex-wrap: wrap;
 }
 
-.drag-card-area {
-    background: #EFD292;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
-    padding: 24px;
-
-    flex: 1 0 auto;
-}
-
 .drop-card {
     background: #F2F2F2;
     margin: 10px;
-    padding: 10px;
+    padding: 32px;
 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     width: 120px;
     flex: 1 1 auto;
 
@@ -126,15 +167,34 @@ body {
     animation-name: scaleIn;
     animation-timing-function: ease-out;
     animation-duration: 0.4s;
+
+    color: #4C4C4C;
+    text-align: center;
+    font-family: Poppins;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.drag-card-area {
+    background: #EFD292;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
+    padding: 24px;
+
+    flex: 1 0 auto;
 }
 
 .drag-card {
     position: absolute;
     width: min-content;
 }
+
 .drag-card-inner {
-    width: 300px;
-    min-height: 100px;
+    /* 8 characters or 20% size of viewport */
+    width: calc(max(20vw, 8em));
+    min-height: 15vh;
+
     cursor: grab;
     animation-name: scaleIn;
     animation-timing-function: ease-out;
@@ -146,9 +206,16 @@ body {
     background: #F2F2F2;
     box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.24);
 
+    padding: 32px;
+    color: #4C4C4C;
+    font-family: Poppins;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
 }
 
 .selected {
-    scale: 1.15;
+    scale: 1.10;
 }
 

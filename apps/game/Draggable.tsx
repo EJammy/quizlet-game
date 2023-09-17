@@ -16,9 +16,10 @@ export interface DragCardProps {
   card: CardSide,
   id: number
   pos: { x: number, y: number }
+  zIndex: number
 }
 
-export function DragCard({ card, id, pos }: DragCardProps) {
+export function DragCard({ card, id, pos, zIndex }: DragCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging, active } = useDraggable({
     id: id,
   });
@@ -29,7 +30,7 @@ export function DragCard({ card, id, pos }: DragCardProps) {
 
   const style: CSSProperties = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 200px)` : undefined,
-    zIndex: transform ? 1 : 0,
+    zIndex: transform? 200000: zIndex,
     top: pos.y,
     left: pos.x,
   };
@@ -38,7 +39,7 @@ export function DragCard({ card, id, pos }: DragCardProps) {
   return (
     <div className='drag-card' ref={setNodeRef} style={style} {...listeners} {...attributes}>
     <button className={'drag-card-inner ' + (isDragging ? 'selected' : '')}>
-      {id}: {label}: {media.map(termMedia => <Media media={termMedia} key={termMedia.type} />)}
+      {media.map(termMedia => <Media media={termMedia} key={termMedia.type} />)}
     </button>
     </div>
   );
