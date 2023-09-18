@@ -19,7 +19,7 @@ export interface DragCardProps {
 }
 
 
-export function Media({ media }: { media: SerializedMedia }) {
+export function Media({ media, smaller }: { media: SerializedMedia, smaller: boolean }) {
   switch (media.type) {
     case MediaType.TEXT:
       const { plainText } = media as SerializedMediaText;
@@ -27,7 +27,7 @@ export function Media({ media }: { media: SerializedMedia }) {
     case MediaType.IMAGE:
       const { url } = media as SerializedMediaImage;
       return (
-        <div key={media.type} className='image-container'>
+        <div key={media.type} className={'image-container ' + (smaller ? 'smaller-image' : '')}>
           <Image
             alt="term image"
             src={url}

@@ -2,14 +2,15 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { CardSide, MediaType, SerializedMediaText } from 'dataset/types';
 import { Media } from './Media';
+import { dir } from 'console';
 
-export interface DropTarget {
+export interface DropCardProps {
   card: CardSide,
   id: number;
-  fade;
+  wrongAnswer: boolean;
 }
 
-export function DropCard({ card, id, fade }: DropTarget) {
+export function DropCard({ card, id, wrongAnswer }: DropCardProps) {
   const { isOver, setNodeRef } = useDroppable({
     id: id,
   });
@@ -22,12 +23,15 @@ export function DropCard({ card, id, fade }: DropTarget) {
   const size = text.plainText.length + (image ? 100: 0);
   const className = 'drop-card '
     + (isOver ? 'selected ' : '')
-    + (size > 180 ? 'smaller-text ' : '')
-    + (fade ? 'fade ': '');
+    + (size > 180 ? 'smaller-text ' : '');
+  const classNameInner = 'drop-card-inner ' +
+    (wrongAnswer ? 'drop-card-wrong ': '');
 
   return (
-    <div ref={setNodeRef} className={className} key={id}>
-       {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
+    <div className={className}>
+      <div ref={setNodeRef} className={classNameInner} key={id}>
+        {media.map(termMedia => <Media media={termMedia} smaller={size > 180} key={termMedia.type} />)}
+      </div>
     </div>
   );
 }

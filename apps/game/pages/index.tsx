@@ -3,14 +3,15 @@ import Fun from 'dataset/sets/Fun';
 import Science from 'dataset/sets/Science';
 import Language from 'dataset/sets/Language';
 
-import { closestCenter, DndContext, DragEndEvent, DragOverlay, rectIntersection } from '@dnd-kit/core';
+import { closestCenter, Data, DndContext, DragEndEvent, DragOverlay, rectIntersection } from '@dnd-kit/core';
 
 import { DragCard, DragCardProps } from '../Draggable';
-import { DropCard } from '../Droppable';
+import { DropCard, DropCardProps } from '../Droppable';
 import { startTransition, useEffect, useRef, useState } from 'react';
-import { StudiableItem } from 'dataset/types';
+import { Dataset, StudiableItem } from 'dataset/types';
 import { restrictToParentElement, snapCenterToCursor } from '@dnd-kit/modifiers';
 import { start } from 'repl';
+import Humanity from 'dataset/sets/Humanities';
 
 interface DragCard extends StudiableItem {
   pos: {
@@ -19,23 +20,23 @@ interface DragCard extends StudiableItem {
   }
 }
 
-function HUDText({text, label}) {
+function HUDText({ text, label }) {
   return (
-  <div className='HUD-textbox'>
-    <div className='HUD-text-main'>
-      {text}
+    <div className='HUD-textbox'>
+      <div className='HUD-text-main'>
+        {text}
+      </div>
+      <div className='HUD-text-label'>
+        {label}
+      </div>
     </div>
-    <div className='HUD-text-label'>
-      {label}
-    </div>
-  </div>
   )
 }
 
-function ComboBox({status}) {
+function ComboBox({ status }) {
   const className = 'combo-box ' + (status ? 'combo-box-on' : 'combo-box-off');
   return (
-  <div className={className} />
+    <div className={className} />
   )
 }
 
@@ -44,12 +45,8 @@ export default function Game() {
   // const quizletSet = Fun.getAllSetsMap().jokes;
   // const quizletSet = Language.getAllSetsMap().chineseFood;
 
-  const [quizletSet, setQuizletSet] = useState(undefined);
-  useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
+  let [allItems, setAllItems] = useState<StudiableItem[]>(undefined);
 
-  const allItems = quizletSet? quizletSet.studiableItem: null;
-
-  const cardCount = allItems? Math.min(allItems.length - 1, 6) : 0;
   const targetCount = 3;
 
   const [dragCards, setDragCards] = useState<DragCardProps[]>([]);
@@ -74,12 +71,20 @@ export default function Game() {
     const cardHeight = 300;
 
     const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
-    return { card: item.cardSides[0], id: item.id, pos: pos, zIndex: cardsZIndex};
+    return { card: item.cardSides[0], id: item.id, pos: pos, zIndex: cardsZIndex };
+  }
+
+  function createDropCard(item: StudiableItem): DropCardProps {
+    return { card: item.cardSides[1], id: item.id, wrongAnswer: false };
   }
 
   // Get random elements in set a that's not in set b
   function getRandom(a: { id: number }[], b: { id: number }[], count: number = 1) {
     const items = allItems.filter(x => a.some(y => y.id == x.id) && !b.some(y => y.id == x.id));
+    console.log("All: ", allItems);
+    console.log("A: ", a);
+    console.log("items: ", items);
+    console.log("items: ", items.length, count);
     let ret = [];
     while (items.length > 0 && count > 0) {
       const rng = Math.floor(Math.random() * items.length);
@@ -104,15 +109,19 @@ export default function Game() {
     timeRemaining = 45 - Math.round((now - startTime) / 1000);
   }
 
-  function startGame() {
+  function startGame(quizletSet: Dataset) {
     setScore(0);
     setMultiplier(1);
     setCombo(0);
-    const initialCards = getRandom(allItems, [], cardCount);
-    setDragCards(initialCards.map(item => {
-      return createCard(item);
-    }));
-    setDropCards(getRandom(initialCards, [], targetCount));
+    const items = quizletSet.studiableItem;
+    allItems = items;
+    setAllItems(items);
+
+    const cardCount = Math.min(allItems.length - 1, 6);
+    const initialCards = getRandom(items, [], cardCount);
+    console.log("Init cards: ", initialCards);
+    setDragCards(initialCards.map(item => createCard(item)));
+    setDropCards(getRandom(initialCards, [], targetCount).map(item => createDropCard(item)));
 
     setStartTime(Date.now());
     setNow(Date.now());
@@ -149,19 +158,36 @@ export default function Game() {
         } else {
           setCombo(newCombo);
         }
+        // Dangerous
+        const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
+        const newTarget = createDropCard(getRandom(dragCards, dropCards, 1)[0]);
+        setDragCards(
+          dragCards.map(item => item.id == event.active.id ? newCard : item)
+        );
+        setDropCards(
+          dropCards.map(item => item.id == event.over.id ? newTarget : item)
+        );
       } else {
+        setDropCards(
+          dropCards.map(item => item.id == event.over.id ?
+            {
+              ...item,
+              wrongAnswer: true,
+            }
+            : item)
+        );
+        setTimeout(() => {
+          setDropCards(
+            dropCards.map(item => item.id == event.over.id ?
+              {
+                ...item,
+                wrongAnswer: false,
+              }
+              : item))
+        }, 400);
         setCombo(0);
         setMultiplier(1);
       }
-      // Dangerous
-      const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
-      const newTarget = getRandom(dragCards, dropCards, 1)[0];
-      setDragCards(
-        dragCards.map(item => item.id == event.active.id ? newCard : item)
-      );
-      setDropCards(
-        dropCards.map(item => item.id == event.over.id ? newTarget : item)
-      );
     } else {
       setDragCards(
         dragCards.map(item => item.id == event.active.id ?
@@ -180,13 +206,21 @@ export default function Game() {
     }
   }
 
+  function StartButton({ dataset }: { dataset: Dataset }) {
+    return (
+      <button className='start-button'
+        onClick={() => { startGame(dataset); }}
+      >Start {dataset.set.title}</button>
+    )
+  }
+
   const startOverlay = timeRemaining >= 0.001 ? null :
     (
       <div className='start-overlay' key="start-overlay" >
         <h1> Combo Matcher </h1>
         {score > 0 ?
           <h2>
-          Score: {score}
+            Score: {score}
           </h2> :
           <p>
             - Match cards<br />
@@ -195,13 +229,20 @@ export default function Game() {
             - Loses all combo and multiplier on mistake, watch out!<br />
           </p>
         }
-        <button onClick={startGame} className='start-button'>Start</button>
+        <button className='start-button'
+          onClick={() => { startGame(Quizlet.getRandomSet()); }}
+        >Start Random Set</button>
+        <StartButton dataset={Fun.getAllSetsMap().jokes} />
+        <StartButton dataset={Humanity.getAllSetsMap().philosophy101} />
+        <StartButton dataset={Science.getAllSetsMap().biologygenetics} />
+        <StartButton dataset={Fun.getAllSetsMap().disneyPrincessTrivia} />
+        <StartButton dataset={Language.getAllSetsMap().chineseFood} />
       </div>
     )
 
   return (
     <>
-      { startOverlay }
+      {startOverlay}
       <div className='outer-area'>
         <div className='game-area'>
           <DndContext
@@ -223,7 +264,7 @@ export default function Game() {
               </div>
               {/* <button onClick={update}>Update!</button> */}
               <div className='drop-card-area'>
-                {dropCards.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
+                {dropCards.map((item) => <DropCard {...item} key={"drop".concat(item.id.toString())} />)}
               </div>
             </div>
             <div className='drag-card-area' ref={spawnAreaRef}>
