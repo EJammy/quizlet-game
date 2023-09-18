@@ -39,7 +39,7 @@ export function DragCard({ card, id, pos, zIndex }: DragCardProps) {
   return (
     <div className='drag-card' ref={setNodeRef} style={style} {...listeners} {...attributes}>
     <button className={'drag-card-inner ' + (isDragging ? 'selected' : '')}>
-      {media.map(termMedia => <Media media={termMedia} key={termMedia.type} />)}
+      {media.map(termMedia => <Media media={termMedia} key={termMedia.type} smaller={false}/>)}
     </button>
     </div>
   );

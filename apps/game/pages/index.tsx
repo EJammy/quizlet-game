@@ -225,7 +225,7 @@ export default function Game() {
           <p>
             - Match cards<br />
             - Gain combo for each correct match<br />
-            - +1 to multipler for every 4 combo<br />
+            - +1 to multiplier for every 4 combo<br />
             - Loses all combo and multiplier on mistake, watch out!<br />
           </p>
         }
