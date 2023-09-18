@@ -20,12 +20,6 @@ export interface DragCardProps {
 
 
 export function Media({ media }: { media: SerializedMedia }) {
-  let IMAGE_HEIGHT = 200;
-  let IMAGE_WIDTH = 200;
-  if (window.innerWidth < 1200) {
-    IMAGE_HEIGHT = 100;
-    IMAGE_WIDTH = 100;
-  }
   switch (media.type) {
     case MediaType.TEXT:
       const { plainText } = media as SerializedMediaText;
@@ -33,13 +27,16 @@ export function Media({ media }: { media: SerializedMedia }) {
     case MediaType.IMAGE:
       const { url } = media as SerializedMediaImage;
       return (
-        <Image
-          alt="term image"
-          key={media.type}
-          src={url}
-          height={IMAGE_HEIGHT}
-          width={IMAGE_WIDTH}
-        />
+        <div key={media.type} className='image-container'>
+          <Image
+            alt="term image"
+            src={url}
+            fill={true}
+            className="image"
+          // height={IMAGE_HEIGHT}
+          // width={IMAGE_WIDTH}
+          />
+        </div>
       );
   }
 };

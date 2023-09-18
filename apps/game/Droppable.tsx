@@ -1,24 +1,32 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { CardSide } from 'dataset/types';
+import { CardSide, MediaType, SerializedMediaText } from 'dataset/types';
 import { Media } from './Media';
 
 export interface DropTarget {
   card: CardSide,
   id: number;
+  fade;
 }
 
-export function DropCard({ card, id }: DropTarget) {
+export function DropCard({ card, id, fade }: DropTarget) {
   const { isOver, setNodeRef } = useDroppable({
     id: id,
   });
-  const style = {
-    color: isOver ? 'green' : undefined,
-  };
 
   const { label, media } = card;
+
+  const text = media.find(x => x.type == MediaType.TEXT) as SerializedMediaText;
+  const image = media.find(x => x.type == MediaType.IMAGE);
+
+  const size = text.plainText.length + (image ? 100: 0);
+  const className = 'drop-card '
+    + (isOver ? 'selected ' : '')
+    + (size > 180 ? 'smaller-text ' : '')
+    + (fade ? 'fade ': '');
+
   return (
-    <div ref={setNodeRef} className={'drop-card ' + (isOver ? 'selected' : '')} style={style} key={id}>
+    <div ref={setNodeRef} className={className} key={id}>
        {media.map(termMedia => <Media media={termMedia} key={termMedia.type}/>)}
     </div>
   );

@@ -1,9 +1,11 @@
+:root {
+}
+
 html {
     height: 100%;
 }
 body {
     height: 100%;
-    box-sizing: border-box;
 }
 
     /* padding: 24px; */
@@ -14,7 +16,26 @@ body {
 }
 
 * {
+    box-sizing: border-box;
     margin: 0;
+    font-style: normal;
+    line-height: normal;
+}
+
+h1 {
+    color: #F6D07C;
+    text-shadow: -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000, 4px 4px 0 #000;
+    font-size: 105px;
+}
+h2 {
+    color: #F6D07C;
+    text-shadow: -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000, 4px 4px 0 #000;
+    font-size: 64px;
+}
+
+p {
+    color: #F9D37E;
+    font-size: 24px;
 }
 
 @keyframes scaleIn {
@@ -27,19 +48,22 @@ body {
 }
 
 .start-overlay {
-    position: absolute;
+    position: fixed;
     width: 100vw;
     height: 100vh;
     z-index: 100;
 
-    background: rgba(0, 0, 0, 0.50);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 32px;
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.70);
     backdrop-filter: blur(5px);
 }
 
 .start-button {
-    position: relative;
-    top: 50%;
-    left: calc(50% - 150px);
     width: 300px;
     height: 75px;
 
@@ -49,7 +73,6 @@ body {
     box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.50);
 
     color: #3C321E;
-    font-family: Poppins;
     font-size: 32px;
     font-style: normal;
     font-weight: 700;
@@ -64,23 +87,31 @@ body {
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
 }
 
+.outer-area {
+    padding: 24px;
+    background: #273234;
+
+    width: 100%;
+    height: 100%;
+}
+
 .game-area {
     display: flex;
     flex-direction: column;
 
     width: 100%;
     height: 100%;
-    box-sizing: border-box;
 }
 
 .top-area {
     display: flex;
     background: #4F6462;
+    height: 350px;
 }
 
 .HUD {
-    width: 350px;
-    min-height: 300px;
+    width: 360px;
+    height: 100%;
     flex: 0 0 auto;
     padding: 32px;
     background: #749380;
@@ -90,36 +121,67 @@ body {
     flex-direction: column;
 }
 
+@media (max-width: 900px) {
+    .top-area {
+        flex-direction: column;
+    }
+    .HUD {
+        width: 100%;
+        height: 200px;
+    }
+}
+
 .HUD>* {
     flex: 1 1 auto;
+}
+
+.combo-area {
+    display: flex;
+    justify-content: space-evenly;
+    width: 100%;
+    flex: 0 0 75px;
+}
+
+.combo-box {
+    border-radius: 12px;
+    width: 20%;
+}
+
+.combo-box-on {
+    background: #ACFFA5;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.combo-box-off {
+    background: #D9D9D9;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
 }
 
 .HUD-textbox {
     display: flex;
 
     background: #E5FFF0;
-    height: 42px;
+    height: 48px;
     flex: 0 1 auto;
-    padding: 12px;
+    padding: 6px 12px;
 }
 
 .HUD-text-main {
-    width: 80%;
+    width: 60%;
 
     display: flex;
     flex-direction: column;
     justify-content: center;
 
     color: #355233;
-    font-family: Roboto;
-    font-size: 40px;
+    font-size: 36px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
 }
 
 .HUD-text-label {
-    width: 20%;
+    width: 40%;
 
     display: flex;
     flex-direction: column;
@@ -127,20 +189,12 @@ body {
 
     color: #404F37;
     text-align: right;
-    font-family: Roboto;
     font-size: 16px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
 }
 
-.combo-counter-area {
-    width: 100%;
-}
-
-.combo-counter {
-    width: 33%;
-}
 
 .drop-card-area {
     padding: 24px;
@@ -154,6 +208,10 @@ body {
     background: #F2F2F2;
     margin: 10px;
     padding: 32px;
+
+    height: 300px;
+
+    overflow: auto;
 
     display: flex;
     flex-direction: column;
@@ -170,12 +228,42 @@ body {
 
     color: #4C4C4C;
     text-align: center;
-    font-family: Poppins;
     font-size: 24px;
     font-style: normal;
     font-weight: 700;
     line-height: normal;
 }
+
+.smaller-text {
+    padding: 12px;
+    font-size: 16px;
+}
+
+.image-container {
+    position: relative;
+    width: 240px;
+    height: 180px;
+}
+
+@media (max-width: 900px) {
+    .image-container {
+        width: 120px;
+        height: 90px;
+    }
+
+    .smaller-text {
+        font-size: 8px;
+    }
+
+    .drop-card {
+        font-size: 12px;
+    }
+}
+
+.image {
+    object-fit: contain;
+}
+
 
 .drag-card-area {
     background: #EFD292;
@@ -208,7 +296,6 @@ body {
 
     padding: 32px;
     color: #4C4C4C;
-    font-family: Poppins;
     font-size: 32px;
     font-style: normal;
     font-weight: 700;

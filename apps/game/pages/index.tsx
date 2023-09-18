@@ -7,9 +7,10 @@ import { closestCenter, DndContext, DragEndEvent, DragOverlay, rectIntersection 
 
 import { DragCard, DragCardProps } from '../Draggable';
 import { DropCard } from '../Droppable';
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 import { StudiableItem } from 'dataset/types';
 import { restrictToParentElement, snapCenterToCursor } from '@dnd-kit/modifiers';
+import { start } from 'repl';
 
 interface DragCard extends StudiableItem {
   pos: {
@@ -31,6 +32,13 @@ function HUDText({text, label}) {
   )
 }
 
+function ComboBox({status}) {
+  const className = 'combo-box ' + (status ? 'combo-box-on' : 'combo-box-off');
+  return (
+  <div className={className} />
+  )
+}
+
 export default function Game() {
 
   // const quizletSet = Fun.getAllSetsMap().jokes;
@@ -39,9 +47,9 @@ export default function Game() {
   const [quizletSet, setQuizletSet] = useState(undefined);
   useEffect(() => setQuizletSet(Quizlet.getRandomSet()), []);
 
-  const allItems = quizletSet? quizletSet.studiableItem.slice(0, 8): null;
+  const allItems = quizletSet? quizletSet.studiableItem: null;
 
-  const cardCount = 5;
+  const cardCount = allItems? Math.min(allItems.length - 1, 6) : 0;
   const targetCount = 3;
 
   const [dragCards, setDragCards] = useState<DragCardProps[]>([]);
@@ -50,6 +58,8 @@ export default function Game() {
 
   const [selected, setSelected] = useState(null);
   const [cardsZIndex, setCardsZIndex] = useState(0);
+  const [combo, setCombo] = useState(0);
+  const [multiplier, setMultiplier] = useState(1);
 
 
   const spawnAreaRef = useRef(null);
@@ -59,9 +69,8 @@ export default function Game() {
 
   function createCard(item: StudiableItem): DragCardProps {
     const rect = spawnAreaRef.current.getBoundingClientRect();
-    console.log(rect);
     // TODO: Change me
-    const cardWidth = 300;
+    const cardWidth = 350;
     const cardHeight = 300;
 
     const pos = { x: randomRange(rect.x, rect.width - cardWidth), y: randomRange(rect.y, rect.height - cardHeight) }
@@ -90,7 +99,15 @@ export default function Game() {
   const [now, setNow] = useState(null);
   const intervalRef = useRef(null);
 
+  let timeRemaining = 0;
+  if (startTime != null && now != null) {
+    timeRemaining = 45 - Math.round((now - startTime) / 1000);
+  }
+
   function startGame() {
+    setScore(0);
+    setMultiplier(1);
+    setCombo(0);
     const initialCards = getRandom(allItems, [], cardCount);
     setDragCards(initialCards.map(item => {
       return createCard(item);
@@ -103,27 +120,38 @@ export default function Game() {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       setNow(Date.now());
-    }, 100);
+    }, 1000);
   }
 
-  function handleStop() {
+  function endGame() {
     clearInterval(intervalRef.current);
+    setDragCards([]);
+    setDropCards([]);
   }
 
-  let timeRemaining = 0;
-  if (startTime != null && now != null) {
-    timeRemaining = 3000 - Math.round((now - startTime) / 1000);
-  }
+  // Can avoid useEffect here
+  useEffect(() => {
+    if (timeRemaining <= 0 && startTime != null) {
+      endGame();
+    }
+  }, [timeRemaining, startTime]);
 
   function handleDragEnd(event: DragEndEvent) {
     const rect = spawnAreaRef.current.getBoundingClientRect();
-    console.log(rect);
     const { x: dx, y: dy } = event.delta;
     if (event.over) {
       if (event.over.id == selected.id) {
-        setScore(score + 1);
+        setScore(score + 10 * multiplier);
+        const newCombo = combo + 1;
+        if (newCombo > 3) {
+          setMultiplier(multiplier + 1);
+          setCombo(0);
+        } else {
+          setCombo(newCombo);
+        }
       } else {
-        setScore(score - 1);
+        setCombo(0);
+        setMultiplier(1);
       }
       // Dangerous
       const newCard = createCard(getRandom(allItems, dragCards, 1)[0]);
@@ -152,40 +180,58 @@ export default function Game() {
     }
   }
 
-  const startOverlay = timeRemaining < 0.01 ? (
-    <div className='start-overlay' >
-      <button onClick={startGame} className='start-button'>Start</button>
-    </div>
-    ) : null
+  const startOverlay = timeRemaining >= 0.001 ? null :
+    (
+      <div className='start-overlay' key="start-overlay" >
+        <h1> Combo Matcher </h1>
+        {score > 0 ?
+          <h2>
+          Score: {score}
+          </h2> :
+          <p>
+            - Match cards<br />
+            - Gain combo for each correct match<br />
+            - +1 to multipler for every 4 combo<br />
+            - Loses all combo and multiplier on mistake, watch out!<br />
+          </p>
+        }
+        <button onClick={startGame} className='start-button'>Start</button>
+      </div>
+    )
 
   return (
-  <>
-    {startOverlay}
-    <div className='game-area'>
-      <DndContext
-        onDragStart={(event) => {
-          const item = dragCards.find(x => x.id == event.active.id)
-          setSelected(item)
-        }}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToParentElement]}
-        collisionDetection={rectIntersection}>
-        <div className='top-area' >
-          <div className='HUD'>
-            <HUDText text={score} label="score" />
-            <HUDText text={score} label="Foo" />
-            <HUDText text={timeRemaining} label="Timer" />
-          </div>
-          {/* <button onClick={update}>Update!</button> */}
-          <div className='drop-card-area'>
-            {dropCards.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
-          </div>
+    <>
+      { startOverlay }
+      <div className='outer-area'>
+        <div className='game-area'>
+          <DndContext
+            onDragStart={(event) => {
+              const item = dragCards.find(x => x.id == event.active.id)
+              setSelected(item)
+            }}
+            onDragEnd={handleDragEnd}
+            modifiers={[restrictToParentElement]}
+            collisionDetection={rectIntersection}>
+            <div className='top-area' >
+              <div className='HUD'>
+                <div className='combo-area'>
+                  {[0, 1, 2].map(x => <ComboBox status={combo > x} key={x} />)}
+                </div>
+                <HUDText text={score} label="score" />
+                <HUDText text={"X" + multiplier} label="multiplier" />
+                <HUDText text={timeRemaining} label="Timer" />
+              </div>
+              {/* <button onClick={update}>Update!</button> */}
+              <div className='drop-card-area'>
+                {dropCards.map((item) => <DropCard card={item.cardSides[1]} id={item.id} key={"drop".concat(item.id.toString())} />)}
+              </div>
+            </div>
+            <div className='drag-card-area' ref={spawnAreaRef}>
+            </div>
+            {dragCards.map(item => <DragCard {...item} key={item.id} />)}
+          </DndContext>
         </div>
-        <div className='drag-card-area' ref={spawnAreaRef}>
-        </div>
-          {dragCards.map(item => <DragCard {...item} key={item.id} />)}
-      </DndContext>
-    </div>
+      </div>
     </>
   );
 }
