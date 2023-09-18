@@ -20,17 +20,17 @@ export function DropCard({ card, id, wrongAnswer }: DropCardProps) {
   const text = media.find(x => x.type == MediaType.TEXT) as SerializedMediaText;
   const image = media.find(x => x.type == MediaType.IMAGE);
 
-  const size = text.plainText.length + (image ? 100: 0);
+  const size = text.plainText.length + (image ? 80: 0);
   const className = 'drop-card '
     + (isOver ? 'selected ' : '')
-    + (size > 180 ? 'smaller-text ' : '');
-  const classNameInner = 'drop-card-inner ' +
-    (wrongAnswer ? 'drop-card-wrong ': '');
+  const classNameInner = 'drop-card-inner '
+    + (wrongAnswer ? 'drop-card-wrong ': '')
+    + (size > 240 ? 'smaller-text ' : '');
 
   return (
     <div className={className}>
       <div ref={setNodeRef} className={classNameInner} key={id}>
-        {media.map(termMedia => <Media media={termMedia} smaller={size > 180} key={termMedia.type} />)}
+        {media.map(termMedia => <Media media={termMedia} smaller={size > 240} key={termMedia.type} />)}
       </div>
     </div>
   );
