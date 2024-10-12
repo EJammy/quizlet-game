@@ -1,3 +1,8 @@
+# Quizlet game-on
+Quizlet contest finalist submission. Pretty random. Fun experience, won $1,000 USD.
+
+Original readme:
+
 # Summary
 
 To be eligible for front-end code only submission in the game competition on https://quizlet.com/labs/games/student-competition, the game must be built using [Next.js](https://nextjs.org), [Turbo Monorepo](https://github.com/vercel/turbo) and TypeScript. For eligibility requirement, please visit the [submission page](https://quizlet.com/labs/games/student-competition) for details.
